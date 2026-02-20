@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <!-- Create Post -->
+    <div class="card" style="border: 2px dashed #E2E8F0;">
+        <form method="POST">
+            {% csrf_token %}
+            <textarea name="content" rows="3" placeholder="What's on your mind?" required></textarea>
+            <button type="submit" class="btn">Post</button>
+        </form>
+    </div>
+
+    <!-- Feed Posts -->
+    {% for post in posts %}
+    <div class="card">
+        <div class="post-header">
+            <div class="avatar">{{ post.author.username|make_list|first|upper }}</div>
+            <div>
+                <a href="{% url 'profile' post.author.username %}" class="username">{{ post.author.username }}</a>
+                <br>
+                <small style="color: var(--text-light);">{{ post.created_at|timesince }} ago</small>
+            </div>
+        </div>
+        
+        <div class="post-content">{{ post.content }}</div>
+        
+        <div class="post-actions">
+            <form action="{% url 'like_post' post.id %}" method="POST" onsubmit="animateLike(this.querySelector('.like-btn'))">
+                {% csrf_token %}
+                <button type="submit" class="like-btn {% if user in post.likes.all %}liked{% endif %}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="{% if user in post.likes.all %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    {% if user in post.likes.all %}Liked{% else %}Like{% endif %} ({{ post.total_likes }})
+                </button>
+            </form>
+            
+            <a href="{% url 'profile' post.author.username %}" class="like-btn" style="text-decoration: none;">
+                View Profile
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="card" style="text-align: center;">
+        <h3 style="color: var(--text-light);">No posts yet!</h3>
+    </div>
+    {% endfor %}
+{% endblock %}
